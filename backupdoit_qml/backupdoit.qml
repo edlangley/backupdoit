@@ -153,6 +153,11 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 label: "..."
+
+                // Temp handler for testing data download:
+                onButtonClick: {
+                    savepathtext.text = bdLogic.ConnectAndDownload("<testuser>", "<testuserpassword>");
+                }
             }
 
         }

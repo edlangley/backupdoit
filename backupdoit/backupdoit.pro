@@ -1,3 +1,10 @@
+#-------------------------------------------------
+#
+# Backupdoit project file
+#
+#-------------------------------------------------
+QT += network
+
 # Add more folders to ship with the application, here
 folder_01.source = ../backupdoit_qml
 folder_01.target = qml
@@ -30,8 +37,14 @@ symbian:TARGET.CAPABILITY += NetworkServices
 # CONFIG += qt-components
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    bdlogic.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
+
+HEADERS += \
+    bdlogic.h
+
+LIBS += -lqjson
