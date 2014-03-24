@@ -46,7 +46,6 @@ Rectangle {
             Row {
                 spacing: 10
                 BdActionPrioRect { priorityval: priority }
-                Text { text: box + ':' }
                 Text { text: name }
                 Text { text: '#' + project }
                 Text { text: '@' + context }
@@ -68,6 +67,82 @@ Rectangle {
     }
 
     Component {
+        id: orderedByContextItemDelegate
+
+        Rectangle {
+            gradient: actionGrad
+
+            Row {
+                spacing: 10
+                BdActionPrioRect { priorityval: priority }
+                Text { text: name }
+                Text { text: '#' + project }
+                Text { text: '^' + box }
+            }
+        }
+    }
+    Component {
+        id: orderByContextDelegate
+
+        Loader {
+            anchors.fill: parent
+            sourceComponent: {
+                if(itemType == 0)
+                    return orderedByContextItemDelegate;
+                else
+                    return headerDelegate;
+            }
+        }
+    }
+
+    Component {
+        id: orderedByProjectItemDelegate
+
+        Rectangle {
+            gradient: actionGrad
+
+            Row {
+                spacing: 10
+                BdActionPrioRect { priorityval: priority }
+                Text { text: name }
+                Text { text: '@' + context }
+                Text { text: '^' + box }
+            }
+        }
+    }
+    Component {
+        id: orderByProjectDelegate
+
+        Loader {
+            anchors.fill: parent
+            sourceComponent: {
+                if(itemType == 0)
+                    return orderedByProjectItemDelegate;
+                else
+                    return headerDelegate;
+            }
+        }
+    }
+
+    Component {
+        id: orderByPriorityDelegate
+
+        Rectangle {
+            gradient: actionGrad
+
+            Row {
+                spacing: 10
+                BdActionPrioRect { priorityval: priority }
+                Text { text: name }
+                Text { text: '#' + project }
+                Text { text: '@' + context }
+                Text { text: '^' + box }
+            }
+        }
+    }
+
+
+    Component {
         id: simpleTestDelegate
 
         Rectangle {
@@ -82,6 +157,7 @@ Rectangle {
         }
     }
 
+
     property int orderingType: actionListview.orderingType
 
     Loader {
@@ -94,11 +170,11 @@ Rectangle {
             default:
                 return orderByBoxDelegate;
             case 1:
-                return simpleTestDelegate;
+                return orderByContextDelegate;
             case 2:
-                return orderByBoxDelegate;
+                return orderByProjectDelegate;
             case 3:
-                return orderByBoxDelegate;
+                return orderByPriorityDelegate;
             }
         }
     }
