@@ -156,7 +156,9 @@ Rectangle {
 
                 // Temp handler for testing data download:
                 onButtonClick: {
-                    savepathtext.text = bdLogic.ConnectAndDownload("<testuser>", "<testuserpassword>");
+
+                    actionlist.loadNewData();
+
                 }
             }
 
@@ -211,5 +213,8 @@ Rectangle {
     Component.onCompleted: {
         bdradioarea.announceSelected.connect(actionlist.newOrderingSelected);
         bdradioarea.announceSelected(0);
+
+        // Temporarily do this here:
+        savepathtext.text = bdLogic.ConnectAndDownload("<testuser>", "<testuserpassword>");
     }
 }

@@ -4,12 +4,14 @@
 
 #include "bdlogic.h"
 
-#define DOIT_LOGIN_URL      "https://i.doit.im/signin"
-#define DOIT_BASE_DATA_URL  "https://i.doit.im/api/tasks/"
+#define DOIT_LOGIN_URL           "https://i.doit.im/signin"
+#define DOIT_RESOURCES_DATA_URL  "https://i.doit.im/api/resources_init"
+#define DOIT_BASE_DATA_URL       "https://i.doit.im/api/tasks/"
 
 enum
 {
     DLSTATE_LOGIN,
+    DLSTATE_RESOURCES,
     DLSTATE_INBOX,
     DLSTATE_TODAY,
     DLSTATE_NEXT,
@@ -24,6 +26,7 @@ enum
 const char *const BoxNames[] =
 {
     "login",
+    "resources",
     "inbox",
     "today",
     "next",
@@ -47,8 +50,10 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
 
     m_dlState = DLSTATE_LOGIN;
     m_statusCode = BDLOGIC_STATUS_DOWNLOADING;
-    m_boxMap.clear();
-    m_boxRawJsonMap.clear();
+    m_boxListOrderedForQML.clear();
+    m_boxMapParsedJson.clear();
+    m_boxMapRawJson.clear();
+    m_replyGotError = false;
 
     loginPostData = "username=";
     loginPostData += username;
@@ -68,41 +73,102 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
     return 0;
 }
 
-/*
 int BdLogic::SetDataModelOrdering(int order)
 {
+//    QString boxName;
+    QVariantMap actionMapFromJson;
+    QVariantList actionListFromJson;
+    QVariantMap actionFromJson;
+    QVariantMap actionForQml;
+
+    m_boxListOrderedForQML.clear();
+
+    switch(order)
+    {
+    case BdLogic::OrderByBox:
+    default:
+        for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)
+        {
+//            boxName = BoxNames[boxIx];
+            actionMapFromJson = m_boxMapParsedJson[BoxNames[boxIx]].toMap();
+            actionListFromJson = actionMapFromJson["entities"].toList();
+            //actionListFromJson = m_boxMapParsedJson[BoxNames[boxIx]]["entities"];
+
+            actionForQml.clear();
+            actionForQml["itemType"] = 1;
+            actionForQml["name"] = BoxNames[boxIx];
+            m_boxListOrderedForQML.push_back(actionForQml);
+
+            for(int actionIx = 0; actionIx < actionListFromJson.length(); actionIx++)
+            {
+                actionFromJson = actionListFromJson[actionIx].toMap();
+
+                actionForQml.clear();
+                actionForQml["itemType"] = 0;
+                actionForQml["name"] = actionFromJson["title"];
+                actionForQml["box"] = actionFromJson["attribute"];
+                actionForQml["project"] = getProjectNameFromJsonAction(actionFromJson);
+                actionForQml["context"] = getContextNameFromJsonAction(actionFromJson);
+                actionForQml["priority"] = actionFromJson["priority"].toInt();
+                m_boxListOrderedForQML.push_back(actionForQml);
+
+            }
+        }
+        break;
+    }
 
     return 0;
 }
-*/
 
-QVariantMap BdLogic::GetDataModel()
+QString BdLogic::getProjectNameFromJsonAction(QVariantMap actionFromJson)
 {
+    QVariantMap resourcesMapFromJson;
+    QVariantList projectListFromJson;
+    QVariantMap projectFromJson;
 
+    resourcesMapFromJson = m_boxMapParsedJson[BoxNames[DLSTATE_RESOURCES]].toMap();
+    resourcesMapFromJson = resourcesMapFromJson["resources"].toMap();
+    projectListFromJson = resourcesMapFromJson["projects"].toList();
 
+    for(int projectIx = 0; projectIx < projectListFromJson.length(); projectIx++)
+    {
+        projectFromJson = projectListFromJson[projectIx].toMap();
 
-    // Test data:
+        if(actionFromJson["project"].toString() == projectFromJson["uuid"].toString())
+        {
+            return projectFromJson["name"].toString();
+        }
+    }
 
-    QVariantMap testBoxMap;
-    QVariantMap testInboxMap;
-    QVariantList testInboxEntitiesList;
-    QVariantMap testTask1, testTask2;
+    return QString("");
+}
 
-    testTask1["project"] = QVariant("Paint shed");
-    testTask1["title"] = QVariant("Get paint");
-    testInboxEntitiesList.push_back(testTask1);
+QString BdLogic::getContextNameFromJsonAction(QVariantMap actionFromJson)
+{
+    QVariantMap resourcesMapFromJson;
+    QVariantList contextListFromJson;
+    QVariantMap contextFromJson;
 
-    testTask2["project"] = QVariant("Make app");
-    testTask2["title"] = QVariant("Write code");
-    testTask2["priority"] = QVariant(0);
-    testInboxEntitiesList.push_back(testTask2);
+    resourcesMapFromJson = m_boxMapParsedJson[BoxNames[DLSTATE_RESOURCES]].toMap();
+    resourcesMapFromJson = resourcesMapFromJson["resources"].toMap();
+    contextListFromJson = resourcesMapFromJson["contexts"].toList();
 
-    testInboxMap["entities"] = testInboxEntitiesList;
+    for(int contextIx = 0; contextIx < contextListFromJson.length(); contextIx++)
+    {
+        contextFromJson = contextListFromJson[contextIx].toMap();
 
-    testBoxMap["inbox"] = testInboxMap;
+        if(actionFromJson["context"].toString() == contextFromJson["uuid"].toString())
+        {
+            return contextFromJson["name"].toString();
+        }
+    }
 
-    return testBoxMap;
-    // End test data version
+    return QString("");
+}
+
+QVariantList BdLogic::GetDataModel()
+{
+    return m_boxListOrderedForQML;
 }
 
 int BdLogic::SaveDataToFile(QString &filename, int fileType)
@@ -113,27 +179,39 @@ int BdLogic::SaveDataToFile(QString &filename, int fileType)
 
 void BdLogic::ReplyFinished()
 {
-    QString replyData(m_reply->readAll());
+    QByteArray replyData(m_reply->readAll());
 
     if(m_replyGotError)
     {
         return;
     }
 
+    qDebug() << BoxNames[m_dlState] << " reply body:\n" << replyData;
+
     if(m_dlState != DLSTATE_LOGIN)
     {
         QJson::Parser parser;
         bool parsedOk = true;
 
-        m_boxRawJsonMap[BoxNames[m_dlState]] = m_reply->readAll();
+        m_boxMapRawJson[BoxNames[m_dlState]] = replyData;
 
-        m_boxMap[BoxNames[m_dlState]] = parser.parse(m_reply->readAll(), &parsedOk);
+        m_boxMapParsedJson[BoxNames[m_dlState]] = parser.parse(replyData, &parsedOk);
         if(!parsedOk)
         {
             m_errorString = QString("Error parsing JSON from URL: ");
-            m_errorString += DOIT_BASE_DATA_URL;
-            m_errorString += BoxNames[m_dlState];
-            // User doesn't really need to know line number of error
+
+            if(m_dlState == DLSTATE_RESOURCES)
+            {
+                m_errorString += DOIT_RESOURCES_DATA_URL;
+            }
+            else
+            {
+                m_errorString += DOIT_BASE_DATA_URL;
+                m_errorString += BoxNames[m_dlState];
+            }
+            // User doesn't really need to know line number of error,
+            // but print during development:
+            qDebug() << m_errorString << ": " << parser.errorString() << ", on line: " << parser.errorLine();
 
             m_statusCode = BDLOGIC_STATUS_JSON_PARSE_ERROR;
 
@@ -150,9 +228,16 @@ void BdLogic::ReplyFinished()
     if(m_dlState != DLSTATE_FINISHED)
     {
         QNetworkRequest request;
-        QString boxUrl(DOIT_BASE_DATA_URL);
-        boxUrl += BoxNames[m_dlState];
-
+        QString boxUrl;
+        if(m_dlState == DLSTATE_RESOURCES)
+        {
+            boxUrl = DOIT_RESOURCES_DATA_URL;
+        }
+        else
+        {
+            boxUrl = DOIT_BASE_DATA_URL;
+            boxUrl += BoxNames[m_dlState];
+        }
         request.setUrl(boxUrl);
         m_reply = m_netManager->get(request);
 
@@ -165,6 +250,10 @@ void BdLogic::ReplyFinished()
     else
     {
         m_statusCode = BDLOGIC_STATUS_OK;
+
+        SetDataModelOrdering(0);
+
+        // TODO: Emit a "download completed" signal.
 
         qDebug() << "Downloading finished";
     }
