@@ -47,8 +47,12 @@ Rectangle {
                 spacing: 10
                 BdActionPrioRect { priorityval: priority }
                 Text { text: name }
-                Text { text: '#' + project }
-                Text { text: '@' + context }
+                Text {
+                    text: { (project != '') ? '#' + project : '' }
+                }
+                Text {
+                    text: { (context != '') ? '@' + context : '' }
+                }
             }
         }
     }
@@ -76,7 +80,9 @@ Rectangle {
                 spacing: 10
                 BdActionPrioRect { priorityval: priority }
                 Text { text: name }
-                Text { text: '#' + project }
+                Text {
+                    text: { (project != '') ? '#' + project : '' }
+                }
                 Text { text: '^' + box }
             }
         }
@@ -105,7 +111,9 @@ Rectangle {
                 spacing: 10
                 BdActionPrioRect { priorityval: priority }
                 Text { text: name }
-                Text { text: '@' + context }
+                Text {
+                    text: { (context != '') ? '@' + context : '' }
+                }
                 Text { text: '^' + box }
             }
         }
@@ -134,8 +142,12 @@ Rectangle {
                 spacing: 10
                 BdActionPrioRect { priorityval: priority }
                 Text { text: name }
-                Text { text: '#' + project }
-                Text { text: '@' + context }
+                Text {
+                    text: { (project != '') ? '#' + project : '' }
+                }
+                Text {
+                    text: { (context != '') ? '@' + context : '' }
+                }
                 Text { text: '^' + box }
             }
         }
@@ -150,9 +162,10 @@ Rectangle {
 
             Row {
                 spacing: 10
-                Text { text: '@' + context }
                 Text { text: name }
                 Text { text: '#' + project }
+                Text { text: '@' + context }
+                Text { text: '^' + box }
             }
         }
     }
