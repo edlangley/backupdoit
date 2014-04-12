@@ -195,6 +195,11 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: 110
                 label: "Save"
+
+                onButtonClick: {
+                    // TODO: retrieve file type choice from another radio button group
+                    bdLogic.SaveDataToFile(savepathtext.text, 0);
+                }
             }
 
             BdButton {

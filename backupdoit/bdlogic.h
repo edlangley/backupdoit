@@ -11,7 +11,7 @@
 #define BDLOGIC_STATUS_OK                           0
 #define BDLOGIC_STATUS_NETWORK_ERROR               -1
 #define BDLOGIC_STATUS_JSON_PARSE_ERROR            -2
-
+#define BDLOGIC_STATUS_FILE_ERROR                  -3
 
 
 class BdLogic : public QObject
@@ -27,21 +27,27 @@ public:
         OrderByPriority
     };
 
+    enum SaveFileType
+    {
+        FileTypeJson = 0,
+        FileTypeOrderedList
+    };
+
     BdLogic();
 
     Q_INVOKABLE int ConnectAndDownload(const QString &username, const QString &password);
     Q_INVOKABLE int GetDownloadStatus() { return m_statusCode; }
     Q_INVOKABLE int SetDataModelOrdering(int order);
     Q_INVOKABLE QVariantList GetDataModel();
-    Q_INVOKABLE int SaveDataToFile(QString &filename, int fileType);
+    Q_INVOKABLE int SaveDataToFile(QString filename, int fileType);
     Q_INVOKABLE QString GetErrorString() { return m_errorString; }
 
     void SetQmlObject(QGraphicsObject *qmlObject) { m_qmlObject = qmlObject; }
 
 private slots:
-    void ReplyFinished();
-    void ReplyError(QNetworkReply::NetworkError code);
-    void ReplySSLError(const QList<QSslError> & errors);
+    void replyFinished();
+    void replyError(QNetworkReply::NetworkError code);
+    void replySSLError(const QList<QSslError> & errors);
 
 private:
     QString getProjectNameFromJsonAction(QVariantMap actionFromJson);
