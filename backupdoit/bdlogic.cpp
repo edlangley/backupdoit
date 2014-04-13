@@ -51,7 +51,7 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
 
     m_dlState = DLSTATE_LOGIN;
     m_statusCode = BDLOGIC_STATUS_DOWNLOADING;
-    m_boxListOrderedForQML.clear();
+    m_actionListOrderedForQML.clear();
     m_boxMapParsedJson.clear();
     m_boxMapRawJson.clear();
     m_replyGotError = false;
@@ -197,7 +197,7 @@ int BdLogic::SetDataModelOrdering(int order)
     QVariantMap actionFromJson;
     QVariantMap actionForQml;
 
-    m_boxListOrderedForQML.clear();
+    m_actionListOrderedForQML.clear();
 
     switch(order)
     {
@@ -213,7 +213,7 @@ int BdLogic::SetDataModelOrdering(int order)
             actionForQml.clear();
             actionForQml["itemType"] = 1;
             actionForQml["name"] = BoxNames[boxIx];
-            m_boxListOrderedForQML.push_back(actionForQml);
+            m_actionListOrderedForQML.push_back(actionForQml);
 
             for(int actionIx = 0; actionIx < actionListFromJson.length(); actionIx++)
             {
@@ -226,7 +226,7 @@ int BdLogic::SetDataModelOrdering(int order)
                 actionForQml["project"] = getProjectNameFromJsonAction(actionFromJson);
                 actionForQml["context"] = getContextNameFromJsonAction(actionFromJson);
                 actionForQml["priority"] = actionFromJson["priority"].toInt();
-                m_boxListOrderedForQML.push_back(actionForQml);
+                m_actionListOrderedForQML.push_back(actionForQml);
 
             }
         }
@@ -296,7 +296,7 @@ QString BdLogic::getContextNameFromJsonAction(QVariantMap actionFromJson)
 
 QVariantList BdLogic::GetDataModel()
 {
-    return m_boxListOrderedForQML;
+    return m_actionListOrderedForQML;
 }
 
 int BdLogic::SaveDataToFile(QString filename, int fileType)
@@ -314,6 +314,25 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
     default:
         // TODO:
         qDebug() << "BdLogic::FileTypeOrderedList not done yet";
+
+        for(int actionIx = 0; actionIx < m_actionListOrderedForQML.length(); actionIx++)
+        {
+            QVariantMap actionForQml = m_actionListOrderedForQML[actionIx].toMap();
+
+            if(actionForQml["itemType"].toInt())
+            {
+                out << actionForQml["name"].toString() << ":\n";
+            }
+            else
+            {
+                out << "Name:     " << actionForQml["name"].toString() << "\n";
+                out << "Box:      " << actionForQml["box"].toString() << "\n";
+                out << "Project:  " << actionForQml["project"].toString() << "\n";
+                out << "Context:  " << actionForQml["name"].toString() << "\n";
+                out << "Priority: " << actionForQml["name"].toString() << "\n\n";
+            }
+        }
+
         break;
     case BdLogic::FileTypeJson:
         for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)

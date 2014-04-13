@@ -54,7 +54,7 @@ private:
     QString getContextNameFromJsonAction(QVariantMap actionFromJson);
 
     int m_dlState;
-    QVariantList m_boxListOrderedForQML;
+    QVariantList m_actionListOrderedForQML;
     QVariantMap m_boxMapParsedJson;
     QMap<QString, QByteArray> m_boxMapRawJson;
     int m_statusCode;

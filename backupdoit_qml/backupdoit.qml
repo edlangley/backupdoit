@@ -198,7 +198,7 @@ Rectangle {
 
                 onButtonClick: {
                     // TODO: retrieve file type choice from another radio button group
-                    bdLogic.SaveDataToFile(savepathtext.text, 0);
+                    bdLogic.SaveDataToFile(savepathtext.text, 1);
                 }
             }
 
