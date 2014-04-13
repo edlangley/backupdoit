@@ -1,6 +1,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QFileDialog>
 #include <qjson/parser.h>
 
 #include "bdlogic.h"
@@ -299,6 +300,27 @@ QVariantList BdLogic::GetDataModel()
     return m_actionListOrderedForQML;
 }
 
+QString BdLogic::GetSaveFileName(int fileType)
+{
+    QString selectedFilter;
+
+    switch(fileType)
+    {
+    case BdLogic::FileTypeOrderedList:
+    default:
+        selectedFilter = "Ordered list (*.txt)";
+        break;
+    case BdLogic::FileTypeJson:
+        selectedFilter = "Raw JSON (*.json)";
+        break;
+    }
+
+    return QFileDialog::getSaveFileName(this, tr("Save File"),
+                                "",
+                                tr("Ordered list (*.txt);;Raw JSON (*.json)"),
+                                &selectedFilter);
+}
+
 int BdLogic::SaveDataToFile(QString filename, int fileType)
 {
 
@@ -312,9 +334,6 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
     {
     case BdLogic::FileTypeOrderedList:
     default:
-        // TODO:
-        qDebug() << "BdLogic::FileTypeOrderedList not done yet";
-
         for(int actionIx = 0; actionIx < m_actionListOrderedForQML.length(); actionIx++)
         {
             QVariantMap actionForQml = m_actionListOrderedForQML[actionIx].toMap();
@@ -332,7 +351,6 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
                 out << "Priority: " << actionForQml["name"].toString() << "\n\n";
             }
         }
-
         break;
     case BdLogic::FileTypeJson:
         for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)

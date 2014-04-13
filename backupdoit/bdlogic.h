@@ -2,6 +2,7 @@
 #define BDLOGIC_H
 
 #include <QObject>
+#include <QWidget>
 #include <QGraphicsObject>
 #include <QString>
 #include <QNetworkAccessManager>
@@ -14,7 +15,7 @@
 #define BDLOGIC_STATUS_FILE_ERROR                  -3
 
 
-class BdLogic : public QObject
+class BdLogic : public QWidget
 {
     Q_OBJECT
 
@@ -29,8 +30,8 @@ public:
 
     enum SaveFileType
     {
-        FileTypeJson = 0,
-        FileTypeOrderedList
+        FileTypeOrderedList = 0,
+        FileTypeJson
     };
 
     BdLogic();
@@ -39,6 +40,7 @@ public:
     Q_INVOKABLE int GetDownloadStatus() { return m_statusCode; }
     Q_INVOKABLE int SetDataModelOrdering(int order);
     Q_INVOKABLE QVariantList GetDataModel();
+    Q_INVOKABLE QString GetSaveFileName(int fileType);
     Q_INVOKABLE int SaveDataToFile(QString filename, int fileType);
     Q_INVOKABLE QString GetErrorString() { return m_errorString; }
 

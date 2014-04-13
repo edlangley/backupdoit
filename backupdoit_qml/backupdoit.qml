@@ -156,9 +156,7 @@ Rectangle {
 
                 // Temp handler for testing data download:
                 onButtonClick: {
-
-                    actionlist.loadNewData();
-
+                    savepathtext.text = bdLogic.GetSaveFileName(0);
                 }
             }
 
@@ -198,7 +196,7 @@ Rectangle {
 
                 onButtonClick: {
                     // TODO: retrieve file type choice from another radio button group
-                    bdLogic.SaveDataToFile(savepathtext.text, 1);
+                    bdLogic.SaveDataToFile(savepathtext.text, 0);
                 }
             }
 
@@ -210,6 +208,12 @@ Rectangle {
                 label: "Quit"
                 anchors.right: parent.right
                 anchors.rightMargin: 0
+
+                // Temp handler for testing data download:
+                // TODO: change this to close the application
+                onButtonClick: {
+                    actionlist.loadNewData();
+                }
             }
 
         }
