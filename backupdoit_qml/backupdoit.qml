@@ -209,13 +209,19 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: 0
 
-                // Temp handler for testing data download:
                 // TODO: change this to close the application
                 onButtonClick: {
-                    actionlist.loadNewData();
+
                 }
             }
 
+        }
+    }
+
+    Connections {
+        target: bdLogic
+        onDownloadFinished: {
+            actionlist.loadNewData();
         }
     }
 
@@ -223,7 +229,7 @@ Rectangle {
         bdradioarea.announceSelected.connect(actionlist.newOrderingSelected);
         bdradioarea.announceSelected(0);
 
-        // Temporarily do this here:
+        // Temporarily do this here, until login+loading screens added:
         savepathtext.text = bdLogic.ConnectAndDownload("<testuser>", "<testuserpassword>");
     }
 }

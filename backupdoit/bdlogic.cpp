@@ -148,10 +148,8 @@ void BdLogic::replyFinished()
     else
     {
         m_statusCode = BDLOGIC_STATUS_OK;
-
         SetDataModelOrdering(0);
-
-        // TODO: Emit a "download completed" signal.
+        emit downloadFinished();
 
         qDebug() << "Downloading finished";
     }

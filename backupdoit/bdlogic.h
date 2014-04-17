@@ -46,6 +46,9 @@ public:
 
     void SetQmlObject(QGraphicsObject *qmlObject) { m_qmlObject = qmlObject; }
 
+signals:
+    void downloadFinished();
+
 private slots:
     void replyFinished();
     void replyError(QNetworkReply::NetworkError code);
