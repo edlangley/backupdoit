@@ -207,9 +207,8 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: 0
 
-                // TODO: change this to close the application
                 onButtonClick: {
-
+                    Qt.quit();
                 }
             }
 
