@@ -30,7 +30,7 @@ Rectangle {
         columns: 2
 
         BdRadioArea {
-            id: bdradioarea
+            id: sortbyradioarea
             x: 1
             y: 31
             label: "Sort by:"
@@ -154,9 +154,8 @@ Rectangle {
                 anchors.rightMargin: 0
                 label: "..."
 
-                // Temp handler for testing data download:
                 onButtonClick: {
-                    savepathtext.text = bdLogic.GetSaveFileName(0);
+                    savepathtext.text = bdLogic.GetSaveFileName(savefiletyperadioarea.getCurrentSelected());
                 }
             }
 
@@ -195,8 +194,7 @@ Rectangle {
                 label: "Save"
 
                 onButtonClick: {
-                    // TODO: retrieve file type choice from another radio button group
-                    bdLogic.SaveDataToFile(savepathtext.text, 0);
+                    bdLogic.SaveDataToFile(savepathtext.text, savefiletyperadioarea.getCurrentSelected());
                 }
             }
 
@@ -225,9 +223,41 @@ Rectangle {
         }
     }
 
+    BdRadioArea {
+        id: savefiletyperadioarea
+        x: 10
+        y: 140
+        label: "File save type:"
+
+        BdRadioButton {
+            id: bdradiobutton5
+            buttonId: 0
+            label: "Ordered List"
+            ticked: true
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.left: parent.left
+            anchors.leftMargin: 4
+            anchors.top: parent.top
+            anchors.topMargin: 20
+        }
+
+        BdRadioButton {
+            id: bdradiobutton6
+            buttonId: 1
+            label: "Raw JSON"
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.left: parent.left
+            anchors.leftMargin: 4
+            anchors.top: parent.top
+            anchors.topMargin: 44
+        }
+    }
+
     Component.onCompleted: {
-        bdradioarea.announceSelected.connect(actionlist.newOrderingSelected);
-        bdradioarea.announceSelected(0);
+        sortbyradioarea.announceSelected.connect(actionlist.newOrderingSelected);
+        sortbyradioarea.announceSelected(0);
 
         // Temporarily do this here, until login+loading screens added:
         savepathtext.text = bdLogic.ConnectAndDownload("<testuser>", "<testuserpassword>");

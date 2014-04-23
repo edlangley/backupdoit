@@ -11,6 +11,7 @@ Rectangle {
     border.color: "#000000"
 
     property string label
+    property int currentSelectedButtonIx
 
     signal clearChildToggles()
     onClearChildToggles: {
@@ -21,6 +22,13 @@ Rectangle {
 
     // on completed, connect children button clicked to announce chosen toggle signal
     signal announceSelected(int buttonIx)
+    onAnnounceSelected: {
+        currentSelectedButtonIx = buttonIx;
+    }
+    function getCurrentSelected() {
+        return currentSelectedButtonIx;
+    }
+
 
     Text {
         id: titletext
