@@ -231,8 +231,54 @@ int BdLogic::SetDataModelOrdering(int order)
         }
         break;
     case BdLogic::OrderByContext:
-        // TODO:
-        qDebug() << "BdLogic::OrderByContext not done yet";
+        {
+            QVariantMap resourcesMapFromJson;
+            QVariantList contextListFromJson;
+            QVariantMap contextFromJson;
+
+            resourcesMapFromJson = m_boxMapParsedJson[BoxNames[DLSTATE_RESOURCES]].toMap();
+            resourcesMapFromJson = resourcesMapFromJson["resources"].toMap();
+            contextListFromJson = resourcesMapFromJson["contexts"].toList();
+
+            // Add an extra context entry with an empty name string
+            // to match against actions with no context
+            contextFromJson["name"] = QString("No context");
+            contextListFromJson.push_back(contextFromJson);
+
+            for(int contextIx = 0; contextIx < contextListFromJson.length(); contextIx++)
+            {
+                contextFromJson = contextListFromJson[contextIx].toMap();
+
+                actionForQml.clear();
+                actionForQml["itemType"] = 1;
+                actionForQml["name"] = contextFromJson["name"].toString();
+                m_actionListOrderedForQML.push_back(actionForQml);
+
+                for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)
+                {
+                    actionMapFromJson = m_boxMapParsedJson[BoxNames[boxIx]].toMap();
+                    actionListFromJson = actionMapFromJson["entities"].toList();
+
+                    for(int actionIx = 0; actionIx < actionListFromJson.length(); actionIx++)
+                    {
+                        actionFromJson = actionListFromJson[actionIx].toMap();
+
+                        if( (actionFromJson["context"].toString() == contextFromJson["uuid"].toString()) ||
+                            ((actionIx == contextListFromJson.length()) && (actionFromJson["context"].toString() == QString())) )
+                        {
+                            actionForQml.clear();
+                            actionForQml["itemType"] = 0;
+                            actionForQml["name"] = actionFromJson["title"];
+                            actionForQml["box"] = actionFromJson["attribute"];
+                            actionForQml["project"] = getProjectNameFromJsonAction(actionFromJson);
+                            actionForQml["context"] = getContextNameFromJsonAction(actionFromJson);
+                            actionForQml["priority"] = actionFromJson["priority"].toInt();
+                            m_actionListOrderedForQML.push_back(actionForQml);
+                        }
+                    }
+                }
+            }
+        }
         break;
     case BdLogic::OrderByProject:
         // TODO:
