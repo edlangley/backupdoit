@@ -2,18 +2,13 @@ import QtQuick 1.1
 
 Rectangle {
 
-    // Empty data model to be populated with data provided from C++
-    ListModel {
-        id: dynamicModel
-    }
-
     ListView {
         id: actionListview
         property int orderingType: 0
 
         anchors.fill: parent
-        // TODO: Just declare a plain empty ListModel here:
-        model: BdSampleActionListModel {
+        // Empty data model to be populated with data provided from C++:
+        model: ListModel {
             id: actionListModel
         }
         delegate: BdActionListDelegates {
@@ -25,8 +20,8 @@ Rectangle {
     onNewOrderingSelected: {
         actionListview.orderingType = newOrderingType;
 
-        // TODO: call setordering in bdlogic,
-        //       call loadNewData()
+        bdLogic.SetDataModelOrdering(newOrderingType);
+        loadNewData();
     }
 
     function loadNewData() {
