@@ -190,7 +190,6 @@ void BdLogic::replySSLError(const QList<QSslError> & errors)
 
 int BdLogic::SetDataModelOrdering(int order)
 {
-//    QString boxName;
     QVariantMap actionMapFromJson;
     QVariantList actionListFromJson;
     QVariantMap actionFromJson;
@@ -204,10 +203,8 @@ int BdLogic::SetDataModelOrdering(int order)
     default:
         for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)
         {
-//            boxName = BoxNames[boxIx];
             actionMapFromJson = m_boxMapParsedJson[BoxNames[boxIx]].toMap();
             actionListFromJson = actionMapFromJson["entities"].toList();
-            //actionListFromJson = m_boxMapParsedJson[BoxNames[boxIx]]["entities"];
 
             actionForQml.clear();
             actionForQml["itemType"] = 1;
@@ -281,8 +278,54 @@ int BdLogic::SetDataModelOrdering(int order)
         }
         break;
     case BdLogic::OrderByProject:
-        // TODO:
-        qDebug() << "BdLogic::OrderByProject not done yet";
+        {
+            QVariantMap resourcesMapFromJson;
+            QVariantList projectListFromJson;
+            QVariantMap projectFromJson;
+
+            resourcesMapFromJson = m_boxMapParsedJson[BoxNames[DLSTATE_RESOURCES]].toMap();
+            resourcesMapFromJson = resourcesMapFromJson["resources"].toMap();
+            projectListFromJson = resourcesMapFromJson["projects"].toList();
+
+            // Add an extra project entry with an empty name string
+            // to match against actions with no project
+            projectFromJson["name"] = QString("No project");
+            projectListFromJson.push_back(projectFromJson);
+
+            for(int projectIx = 0; projectIx < projectListFromJson.length(); projectIx++)
+            {
+                projectFromJson = projectListFromJson[projectIx].toMap();
+
+                actionForQml.clear();
+                actionForQml["itemType"] = 1;
+                actionForQml["name"] = projectFromJson["name"].toString();
+                m_actionListOrderedForQML.push_back(actionForQml);
+
+                for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)
+                {
+                    actionMapFromJson = m_boxMapParsedJson[BoxNames[boxIx]].toMap();
+                    actionListFromJson = actionMapFromJson["entities"].toList();
+
+                    for(int actionIx = 0; actionIx < actionListFromJson.length(); actionIx++)
+                    {
+                        actionFromJson = actionListFromJson[actionIx].toMap();
+
+                        if( (actionFromJson["project"].toString() == projectFromJson["uuid"].toString()) ||
+                            ((actionIx == projectListFromJson.length()) && (actionFromJson["project"].toString() == QString())) )
+                        {
+                            actionForQml.clear();
+                            actionForQml["itemType"] = 0;
+                            actionForQml["name"] = actionFromJson["title"];
+                            actionForQml["box"] = actionFromJson["attribute"];
+                            actionForQml["project"] = getProjectNameFromJsonAction(actionFromJson);
+                            actionForQml["context"] = getContextNameFromJsonAction(actionFromJson);
+                            actionForQml["priority"] = actionFromJson["priority"].toInt();
+                            m_actionListOrderedForQML.push_back(actionForQml);
+                        }
+                    }
+                }
+            }
+        }
         break;
     case BdLogic::OrderByPriority:
         // TODO:
