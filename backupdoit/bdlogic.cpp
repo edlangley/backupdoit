@@ -328,8 +328,53 @@ int BdLogic::SetDataModelOrdering(int order)
         }
         break;
     case BdLogic::OrderByPriority:
-        // TODO:
-        qDebug() << "BdLogic::OrderByPriority not done yet";
+        for(int priority = 3; priority >= 0; priority--)
+        {
+            actionForQml.clear();
+            actionForQml["itemType"] = 1;
+            QString prioHeaderName("Priority: ");
+            switch(priority)
+            {
+            case 3:
+                prioHeaderName += "High";
+                break;
+            case 2:
+                prioHeaderName += "Medium";
+                break;
+            case 1:
+                prioHeaderName += "Low";
+                break;
+            case 0:
+            default:
+                prioHeaderName += "None";
+                break;
+            }
+            actionForQml["name"] = prioHeaderName;
+            m_actionListOrderedForQML.push_back(actionForQml);
+
+            for(int boxIx = DLSTATE_INBOX; boxIx < DLSTATE_FINISHED; boxIx++)
+            {
+                actionMapFromJson = m_boxMapParsedJson[BoxNames[boxIx]].toMap();
+                actionListFromJson = actionMapFromJson["entities"].toList();
+
+                for(int actionIx = 0; actionIx < actionListFromJson.length(); actionIx++)
+                {
+                    actionFromJson = actionListFromJson[actionIx].toMap();
+
+                    if( actionFromJson["priority"].toInt() == priority )
+                    {
+                        actionForQml.clear();
+                        actionForQml["itemType"] = 0;
+                        actionForQml["name"] = actionFromJson["title"];
+                        actionForQml["box"] = actionFromJson["attribute"];
+                        actionForQml["project"] = getProjectNameFromJsonAction(actionFromJson);
+                        actionForQml["context"] = getContextNameFromJsonAction(actionFromJson);
+                        actionForQml["priority"] = actionFromJson["priority"].toInt();
+                        m_actionListOrderedForQML.push_back(actionForQml);
+                    }
+                }
+            }
+        }
         break;
     }
 

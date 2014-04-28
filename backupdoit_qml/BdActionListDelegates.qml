@@ -133,7 +133,7 @@ Rectangle {
     }
 
     Component {
-        id: orderByPriorityDelegate
+        id: orderedByPriorityItemDelegate
 
         Rectangle {
             gradient: actionGrad
@@ -149,6 +149,19 @@ Rectangle {
                     text: { (context != '') ? '@' + context : '' }
                 }
                 Text { text: '^' + box }
+            }
+        }
+    }
+    Component {
+        id: orderByPriorityDelegate
+
+        Loader {
+            anchors.fill: parent
+            sourceComponent: {
+                if(itemType == 0)
+                    return orderedByPriorityItemDelegate;
+                else
+                    return headerDelegate;
             }
         }
     }
