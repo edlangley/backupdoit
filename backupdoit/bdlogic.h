@@ -8,6 +8,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+#define BDLOGIC_STATUS_DOWNLOAD_FINISHED            2
 #define BDLOGIC_STATUS_DOWNLOADING                  1
 #define BDLOGIC_STATUS_OK                           0
 #define BDLOGIC_STATUS_NETWORK_ERROR               -1
@@ -37,17 +38,15 @@ public:
     BdLogic();
 
     Q_INVOKABLE int ConnectAndDownload(const QString &username, const QString &password);
-    Q_INVOKABLE int GetDownloadStatus() { return m_statusCode; }
     Q_INVOKABLE int SetDataModelOrdering(int order);
     Q_INVOKABLE QVariantList GetDataModel();
     Q_INVOKABLE QString GetSaveFileName(int fileType);
     Q_INVOKABLE int SaveDataToFile(QString filename, int fileType);
-    Q_INVOKABLE QString GetErrorString() { return m_errorString; }
 
     void SetQmlObject(QGraphicsObject *qmlObject) { m_qmlObject = qmlObject; }
 
 signals:
-    void downloadFinished();
+    void downloadStatusUpdated(int status, QString message);
 
 private slots:
     void replyFinished();
@@ -63,7 +62,7 @@ private:
     QVariantMap m_boxMapParsedJson;
     QMap<QString, QByteArray> m_boxMapRawJson;
     int m_statusCode;
-    QString m_errorString;
+    QString m_statusString;
 
     QNetworkAccessManager *m_netManager;
     QNetworkReply *m_reply;

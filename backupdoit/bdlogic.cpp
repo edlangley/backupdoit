@@ -52,6 +52,7 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
 
     m_dlState = DLSTATE_LOGIN;
     m_statusCode = BDLOGIC_STATUS_DOWNLOADING;
+    m_statusString = QString("Logging in");
     m_actionListOrderedForQML.clear();
     m_boxMapParsedJson.clear();
     m_boxMapRawJson.clear();
@@ -72,6 +73,8 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
     connect(m_reply, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(replySSLError(QList<QSslError>)));
 
+    emit downloadStatusUpdated(m_statusCode, m_statusString);
+
     return 0;
 }
 
@@ -86,6 +89,8 @@ void BdLogic::replyFinished()
 
     qDebug() << BoxNames[m_dlState] << " reply body:\n" << replyData;
 
+    // TODO: if state is login, check if it worked ....
+
     if(m_dlState != DLSTATE_LOGIN)
     {
         QJson::Parser parser;
@@ -96,22 +101,24 @@ void BdLogic::replyFinished()
         m_boxMapParsedJson[BoxNames[m_dlState]] = parser.parse(replyData, &parsedOk);
         if(!parsedOk)
         {
-            m_errorString = QString("Error parsing JSON from URL: ");
+            m_statusString = QString("Error parsing JSON from URL: ");
 
             if(m_dlState == DLSTATE_RESOURCES)
             {
-                m_errorString += DOIT_RESOURCES_DATA_URL;
+                m_statusString += DOIT_RESOURCES_DATA_URL;
             }
             else
             {
-                m_errorString += DOIT_BASE_DATA_URL;
-                m_errorString += BoxNames[m_dlState];
+                m_statusString += DOIT_BASE_DATA_URL;
+                m_statusString += BoxNames[m_dlState];
             }
             // User doesn't really need to know line number of error,
             // but print during development:
-            qDebug() << m_errorString << ": " << parser.errorString() << ", on line: " << parser.errorLine();
+            qDebug() << m_statusString << ": " << parser.errorString() << ", on line: " << parser.errorLine();
 
             m_statusCode = BDLOGIC_STATUS_JSON_PARSE_ERROR;
+
+            emit downloadStatusUpdated(m_statusCode, m_statusString);
 
             m_reply->deleteLater();
             return;
@@ -144,14 +151,20 @@ void BdLogic::replyFinished()
                 this, SLOT(replyError(QNetworkReply::NetworkError)));
         connect(m_reply, SIGNAL(sslErrors(QList<QSslError>)),
                 this, SLOT(replySSLError(QList<QSslError>)));
+
+        m_statusString = QString("Downloading data for box: ");
+        m_statusString += BoxNames[m_dlState];
+
+        emit downloadStatusUpdated(m_statusCode, m_statusString);
     }
     else
     {
-        m_statusCode = BDLOGIC_STATUS_OK;
+        m_statusCode = BDLOGIC_STATUS_DOWNLOAD_FINISHED;
+        m_statusString = QString("Downloading finished");
         SetDataModelOrdering(0);
-        emit downloadFinished();
 
-        qDebug() << "Downloading finished";
+        emit downloadStatusUpdated(m_statusCode, m_statusString);
+        qDebug() << m_statusString;
     }
 
 }
@@ -160,32 +173,34 @@ void BdLogic::replyError(QNetworkReply::NetworkError code)
 {
     m_replyGotError = true;
 
-    m_errorString = QString("Network error accessing URL: ");
-    m_errorString += DOIT_BASE_DATA_URL;
-    m_errorString += BoxNames[m_dlState];
-    m_errorString += ", error: ";
-    m_errorString += code;
-    m_errorString += ": ";
-    m_errorString += m_reply->errorString();
+    m_statusString = QString("Network error accessing URL: ");
+    m_statusString += DOIT_BASE_DATA_URL;
+    m_statusString += BoxNames[m_dlState];
+    m_statusString += ", error: ";
+    m_statusString += code;
+    m_statusString += ": ";
+    m_statusString += m_reply->errorString();
 
     m_statusCode = BDLOGIC_STATUS_NETWORK_ERROR;
 
-    qDebug() << m_errorString;
+    emit downloadStatusUpdated(m_statusCode, m_statusString);
+    qDebug() << m_statusString;
 }
 
 void BdLogic::replySSLError(const QList<QSslError> & errors)
 {
     m_replyGotError = true;
 
-    m_errorString = QString("SSL network error accessing URL: ");
-    m_errorString += DOIT_BASE_DATA_URL;
-    m_errorString += BoxNames[m_dlState];
-    m_errorString += ", error: ";
-    m_errorString += m_reply->errorString();
+    m_statusString = QString("SSL network error accessing URL: ");
+    m_statusString += DOIT_BASE_DATA_URL;
+    m_statusString += BoxNames[m_dlState];
+    m_statusString += ", error: ";
+    m_statusString += m_reply->errorString();
 
     m_statusCode = BDLOGIC_STATUS_NETWORK_ERROR;
 
-    qDebug() << m_errorString;
+    emit downloadStatusUpdated(m_statusCode, m_statusString);
+    qDebug() << m_statusString;
 }
 
 int BdLogic::SetDataModelOrdering(int order)

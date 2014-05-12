@@ -56,8 +56,7 @@ Item {
     transitions: [
         Transition {
             from: "login"
-            //to: "progress"
-            to: "mainscreen"
+            to: "progress"
             NumberAnimation {
                 properties: "x"
                 duration: 1000
@@ -78,10 +77,30 @@ Item {
 
     signal loginStarted(string username, string password)
     onLoginStarted: {
-        //bdtransitionscreen.state = "progress";
-
+        bdtransitionscreen.state = "progress";
         bdLogic.ConnectAndDownload(username, password);
-        bdtransitionscreen.state = "mainscreen";
+    }
+
+    Connections {
+        target: bdLogic
+        onDownloadStatusUpdated: {
+            switch(status) {
+            case 2:
+                {
+                    bdprogscreen.statusMessage = message;
+                    bdmainScreen.loadNewData();
+                    bdtransitionscreen.state = "mainscreen";
+                }
+                break;
+            default:
+                {
+                    bdprogscreen.statusMessage = message;
+                }
+                break;
+            }
+
+            // TODO: if status < 0, stop progress animation
+        }
     }
 
     Component.onCompleted: {

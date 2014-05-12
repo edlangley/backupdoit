@@ -214,13 +214,6 @@ Rectangle {
         }
     }
 
-    Connections {
-        target: bdLogic
-        onDownloadFinished: {
-            actionlist.loadNewData();
-        }
-    }
-
     BdRadioArea {
         id: savefiletyperadioarea
         x: 10
@@ -251,6 +244,10 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: 44
         }
+    }
+
+    function loadNewData () {
+        actionlist.loadNewData();
     }
 
     Component.onCompleted: {

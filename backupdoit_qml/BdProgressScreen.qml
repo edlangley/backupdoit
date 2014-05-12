@@ -16,12 +16,14 @@ Rectangle {
         }
     }
 
+    property string statusMessage
+
     Text {
         id: text1
         x: 270
         y: 193
         height: 40
-        text: qsTr("Progress Messages Here")
+        text: statusMessage
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 30
         font.pointSize: 25
