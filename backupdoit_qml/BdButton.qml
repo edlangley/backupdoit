@@ -4,16 +4,16 @@ import QtQuick 1.1
 Rectangle {
     width: 100
     height: 50
-    radius: 8
+    radius: 4
     gradient: Gradient {
         GradientStop {
             position: 0
-            color: "#4f68e6"
+            color: "#559ed4"
         }
 
         GradientStop {
             position: 1
-            color: "#0b06aa"
+            color: "#2771ad"
         }
     }
 
@@ -21,6 +21,7 @@ Rectangle {
 
     Text {
         id: bdButtonLabel
+        color: "#ffffff"
         text: label
         anchors.centerIn: parent
         font.family: "FreeSans"

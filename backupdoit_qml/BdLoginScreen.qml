@@ -7,12 +7,12 @@ Rectangle {
     gradient: Gradient {
         GradientStop {
             position: 0
-            color: "#1423ee"
+            color: "#1d74af"
         }
 
         GradientStop {
             position: 1
-            color: "#8f97ff"
+            color: "#125288"
         }
     }
 
@@ -43,6 +43,7 @@ Rectangle {
 
             Text {
                 id: usernamelabel
+                color: "#ffffff"
                 text: qsTr("Username:")
                 font.pixelSize: 12
             }
@@ -69,6 +70,7 @@ Rectangle {
                 id: passwordlabel
                 x: 55
                 y: 31
+                color: "#ffffff"
                 text: qsTr("Password:")
                 font.pixelSize: 12
             }

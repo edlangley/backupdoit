@@ -9,11 +9,11 @@ Rectangle {
         id: actionGrad
         GradientStop {
             position: 0
-            color: "#FFFFFF"
+            color: "#d0d3d7"
         }
         GradientStop {
             position: 1
-            color: "#808080"
+            color: "#f5f6f7"
         }
     }
 
@@ -42,6 +42,7 @@ Rectangle {
 
         Rectangle {
             gradient: actionGrad
+            border.color: "#c6c6c6"
 
             Row {
                 spacing: 10
@@ -75,6 +76,7 @@ Rectangle {
 
         Rectangle {
             gradient: actionGrad
+            border.color: "#c6c6c6"
 
             Row {
                 spacing: 10
@@ -106,6 +108,7 @@ Rectangle {
 
         Rectangle {
             gradient: actionGrad
+            border.color: "#c6c6c6"
 
             Row {
                 spacing: 10
@@ -137,6 +140,7 @@ Rectangle {
 
         Rectangle {
             gradient: actionGrad
+            border.color: "#c6c6c6"
 
             Row {
                 spacing: 10

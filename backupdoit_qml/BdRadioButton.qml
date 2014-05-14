@@ -27,6 +27,7 @@ Rectangle {
 
     Text {
         id: buttonLabel
+        color: "#ffffff"
         text: label
         anchors.left: togglebox.right
         anchors.leftMargin: 4

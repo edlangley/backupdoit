@@ -7,12 +7,12 @@ Rectangle {
     gradient: Gradient {
         GradientStop {
             position: 0
-            color: "#1423ee"
+            color: "#1d74af"
         }
 
         GradientStop {
             position: 1
-            color: "#8f97ff"
+            color: "#125288"
         }
     }
 
@@ -101,6 +101,7 @@ Rectangle {
             id: savelocationtext
             y: 75
             height: 20
+            color: "#ffffff"
             text: qsTr("Save Location:")
             anchors.left: parent.left
             anchors.leftMargin: 0
@@ -134,7 +135,7 @@ Rectangle {
 
                 TextEdit {
                     id: savepathtext
-                    text: qsTr("text edit")
+                    text: qsTr("")
                     anchors.fill: parent
                     font.pixelSize: 12
                 }

@@ -8,7 +8,7 @@ Rectangle {
     color: "#00000000"
     radius: 4
     border.width: 2
-    border.color: "#000000"
+    border.color: "#ffffff"
 
     property string label
     property int currentSelectedButtonIx
@@ -33,6 +33,7 @@ Rectangle {
     Text {
         id: titletext
         height: 14
+        color: "#ffffff"
         text: label
         anchors.left: parent.left
         anchors.leftMargin: 4
