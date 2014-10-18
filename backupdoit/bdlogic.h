@@ -7,6 +7,7 @@
 #include <QString>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QSslError>
 
 #define BDLOGIC_STATUS_DOWNLOAD_FINISHED            2
 #define BDLOGIC_STATUS_DOWNLOADING                  1
@@ -52,6 +53,7 @@ private slots:
     void replyFinished();
     void replyError(QNetworkReply::NetworkError code);
     void replySSLError(const QList<QSslError> & errors);
+    void ignoreSSLErrors(QNetworkReply* reply, QList<QSslError> errors);
 
 private:
     QString getProjectNameFromJsonAction(QVariantMap actionFromJson);

@@ -47,4 +47,10 @@ qtcAddDeployment()
 HEADERS += \
     bdlogic.h
 
-LIBS += -lqjson
+win32 {
+    INCLUDEPATH += ./qjson_win32_mingw4.8/include
+    LIBS += -L$$PWD/qjson_win32_mingw4.8/lib -lqjson0
+}
+unix {
+    LIBS += -lqjson
+}

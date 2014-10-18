@@ -44,6 +44,11 @@ BdLogic::BdLogic()
 
     m_dlState = DLSTATE_LOGIN;
     m_statusCode = BDLOGIC_STATUS_OK;
+
+#ifdef WIN32 // SSL errors always happen on some Windows builds
+    QObject::connect(m_netManager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+                     this, SLOT(ignoreSSLErrors(QNetworkReply*,QList<QSslError>)));
+#endif
 }
 
 int BdLogic::ConnectAndDownload(const QString &username, const QString &password)
@@ -189,8 +194,9 @@ void BdLogic::replyError(QNetworkReply::NetworkError code)
 
 void BdLogic::replySSLError(const QList<QSslError> & errors)
 {
+#ifndef WIN32
     m_replyGotError = true;
-
+#endif
     m_statusString = QString("SSL network error accessing URL: ");
     m_statusString += DOIT_BASE_DATA_URL;
     m_statusString += BoxNames[m_dlState];
@@ -201,6 +207,11 @@ void BdLogic::replySSLError(const QList<QSslError> & errors)
 
     emit downloadStatusUpdated(m_statusCode, m_statusString);
     qDebug() << m_statusString;
+}
+
+void BdLogic::ignoreSSLErrors(QNetworkReply* reply, QList<QSslError> errors)
+{
+    reply->ignoreSslErrors(errors);
 }
 
 int BdLogic::SetDataModelOrdering(int order)
@@ -511,4 +522,3 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
 
     return BDLOGIC_STATUS_OK;
 }
-
