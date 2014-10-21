@@ -505,8 +505,8 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
                 out << "Name:     " << actionForQml["name"].toString() << "\n";
                 out << "Box:      " << actionForQml["box"].toString() << "\n";
                 out << "Project:  " << actionForQml["project"].toString() << "\n";
-                out << "Context:  " << actionForQml["name"].toString() << "\n";
-                out << "Priority: " << actionForQml["name"].toString() << "\n\n";
+                out << "Context:  " << actionForQml["context"].toString() << "\n";
+                out << "Priority: " << actionForQml["priority"].toString() << "\n\n";
             }
         }
         break;
