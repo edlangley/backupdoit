@@ -21,6 +21,7 @@ enum
     DLSTATE_SCHEDULED,
     DLSTATE_SOMEDAY,
     DLSTATE_WAITING,
+    DLSTATE_INACTIVEPROJECTS,
     DLSTATE_FINISHED
 };
 
@@ -36,6 +37,7 @@ const char *const BoxNames[] =
     "scheduled",
     "someday",
     "waiting",
+    "inactive projects",
 };
 
 BdLogic::BdLogic()
@@ -62,6 +64,9 @@ int BdLogic::ConnectAndDownload(const QString &username, const QString &password
     m_boxMapParsedJson.clear();
     m_boxMapRawJson.clear();
     m_replyGotError = false;
+
+    m_inactiveProjectListParsedJson.clear();
+    m_currentInactiveProjectDlIx = 0;
 
     loginPostData = "username=";
     loginPostData += username;
@@ -101,9 +106,24 @@ void BdLogic::replyFinished()
         QJson::Parser parser;
         bool parsedOk = true;
 
-        m_boxMapRawJson[BoxNames[m_dlState]] = replyData;
+        if(m_dlState == DLSTATE_INACTIVEPROJECTS)
+        {
+            m_boxMapRawJson[BoxNames[m_dlState]] += replyData;
+            m_boxMapRawJson[BoxNames[m_dlState]] += "\n";
+            m_inactiveProjectListParsedJson.push_back(parser.parse(replyData, &parsedOk));
+            m_currentInactiveProjectDlIx++;
+        }
+        else
+        {
+            m_boxMapRawJson[BoxNames[m_dlState]] = replyData;
+            m_boxMapParsedJson[BoxNames[m_dlState]] = parser.parse(replyData, &parsedOk);
 
-        m_boxMapParsedJson[BoxNames[m_dlState]] = parser.parse(replyData, &parsedOk);
+            if(m_dlState == DLSTATE_RESOURCES)
+            {
+                buildInactiveProjectList();
+            }
+        }
+
         if(!parsedOk)
         {
             m_statusString = QString("Error parsing JSON from URL: ");
@@ -134,7 +154,20 @@ void BdLogic::replyFinished()
     // After this, I can re-use my QNetworkReply pointer
     m_reply->deleteLater();
 
-    m_dlState++;
+    if(m_dlState != DLSTATE_INACTIVEPROJECTS)
+    {
+        m_dlState++;
+    }
+
+    // Catch no inactive projects, as soon as state is entered
+    if(m_dlState == DLSTATE_INACTIVEPROJECTS)
+    {
+        if(m_currentInactiveProjectDlIx >= m_inactiveProjectUUIDList.length())
+        {
+            m_dlState++;
+        }
+    }
+
     if(m_dlState != DLSTATE_FINISHED)
     {
         QNetworkRequest request;
@@ -142,6 +175,11 @@ void BdLogic::replyFinished()
         if(m_dlState == DLSTATE_RESOURCES)
         {
             boxUrl = DOIT_RESOURCES_DATA_URL;
+        }
+        else if(m_dlState == DLSTATE_INACTIVEPROJECTS)
+        {
+            boxUrl = DOIT_BASE_DATA_URL "project/";
+            boxUrl += m_inactiveProjectUUIDList[m_currentInactiveProjectDlIx];
         }
         else
         {
@@ -166,6 +204,7 @@ void BdLogic::replyFinished()
     {
         m_statusCode = BDLOGIC_STATUS_DOWNLOAD_FINISHED;
         m_statusString = QString("Downloading finished");
+        addInactiveProjectTasksToBoxes();
         SetDataModelOrdering(0);
 
         emit downloadStatusUpdated(m_statusCode, m_statusString);
@@ -194,6 +233,8 @@ void BdLogic::replyError(QNetworkReply::NetworkError code)
 
 void BdLogic::replySSLError(const QList<QSslError> & errors)
 {
+    Q_UNUSED(errors)
+
 #ifndef WIN32
     m_replyGotError = true;
 #endif
@@ -519,6 +560,82 @@ int BdLogic::SaveDataToFile(QString filename, int fileType)
     }
 
     file.close();
+
+    return BDLOGIC_STATUS_OK;
+}
+
+int BdLogic::buildInactiveProjectList()
+{
+    QVariantMap resourcesMapFromJson;
+    QVariantList projectListFromJson;
+    QVariantMap projectFromJson;
+
+    resourcesMapFromJson = m_boxMapParsedJson[BoxNames[DLSTATE_RESOURCES]].toMap();
+    resourcesMapFromJson = resourcesMapFromJson["resources"].toMap();
+    projectListFromJson = resourcesMapFromJson["projects"].toList();
+
+    m_currentInactiveProjectDlIx = 0;
+    m_inactiveProjectUUIDList.clear();
+
+    for(int projectIx = 0; projectIx < projectListFromJson.length(); projectIx++)
+    {
+        projectFromJson = projectListFromJson[projectIx].toMap();
+
+        if(projectFromJson["status"].toString() == QString("inactive"))
+        {
+            m_inactiveProjectUUIDList.push_back(projectFromJson["uuid"].toString());
+        }
+    }
+
+    return BDLOGIC_STATUS_OK;
+}
+
+int BdLogic::addInactiveProjectTasksToBoxes()
+{
+    QVariantMap inactiveActionMapFromJson;
+    QVariantList inactiveActionListFromJson;
+
+    QVariantMap actionMapFromJson;
+    QVariantList actionListFromJson;
+    QVariantMap actionFromJson;
+
+    for(int projectIx = 0; projectIx < m_inactiveProjectListParsedJson.length(); projectIx++)
+    {
+        inactiveActionMapFromJson = m_inactiveProjectListParsedJson[projectIx].toMap();
+        inactiveActionListFromJson = inactiveActionMapFromJson["entities"].toList();
+
+        for(int actionIx = 0; actionIx < inactiveActionListFromJson.length(); actionIx++)
+        {
+            QVariantMap inactiveActionFromJson = inactiveActionListFromJson[actionIx].toMap();
+
+            QString destBox;
+            if(inactiveActionFromJson["attribute"].toString() == QString("next"))
+            {
+                destBox = "next";
+            }
+            else if(inactiveActionFromJson["attribute"].toString() == QString("waiting"))
+            {
+                destBox = "waiting";
+            }
+            else if(inactiveActionFromJson["attribute"].toString() == QString("noplan"))
+            {
+                destBox = "someday";
+            }
+            else // Should process start_at field, for now just stick it in scheduled
+            {
+                destBox = "scheduled";
+            }
+            // Rename box in the action so it displays consistently
+            inactiveActionFromJson.insert("attribute", destBox);
+
+            actionMapFromJson = m_boxMapParsedJson[destBox].toMap();
+            actionListFromJson = actionMapFromJson["entities"].toList();
+
+            actionListFromJson.push_back(inactiveActionFromJson);
+            actionMapFromJson.insert("entities", actionListFromJson);
+            m_boxMapParsedJson.insert(destBox, actionMapFromJson);
+        }
+    }
 
     return BDLOGIC_STATUS_OK;
 }

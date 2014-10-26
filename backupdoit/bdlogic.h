@@ -58,6 +58,9 @@ private slots:
 private:
     QString getProjectNameFromJsonAction(QVariantMap actionFromJson);
     QString getContextNameFromJsonAction(QVariantMap actionFromJson);
+    int buildInactiveProjectList();
+    int addInactiveProjectTasksToBoxes();
+
 
     int m_dlState;
     QVariantList m_actionListOrderedForQML;
@@ -65,6 +68,10 @@ private:
     QMap<QString, QByteArray> m_boxMapRawJson;
     int m_statusCode;
     QString m_statusString;
+
+    int m_currentInactiveProjectDlIx;
+    QList<QString> m_inactiveProjectUUIDList;
+    QVariantList m_inactiveProjectListParsedJson;
 
     QNetworkAccessManager *m_netManager;
     QNetworkReply *m_reply;
