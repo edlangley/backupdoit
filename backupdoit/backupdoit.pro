@@ -48,8 +48,11 @@ HEADERS += \
     bdlogic.h
 
 win32 {
+    CONFIG += link_prl
+
+    DEFINES += QJSON_MAKESTATIC
     INCLUDEPATH += ./qjson_win32_mingw4.8/include
-    LIBS += -L$$PWD/qjson_win32_mingw4.8/lib -lqjson0
+    LIBS += -L$$PWD/qjson_win32_mingw4.8/lib -lqjson
 }
 unix {
     LIBS += -lqjson
