@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/qml/backupdoit_qml">
+        <file>backupdoit.qml</file>
+        <file>BdActionList.qml</file>
+        <file>BdActionListDelegates.qml</file>
+        <file>BdActionPrioRect.qml</file>
+        <file>BdButton.qml</file>
+        <file>BdLoginScreen.qml</file>
+        <file>BdMainScreen.qml</file>
+        <file>BdProgressScreen.qml</file>
+        <file>BdRadioArea.qml</file>
+        <file>BdRadioButton.qml</file>
+    </qresource>
+</RCC>

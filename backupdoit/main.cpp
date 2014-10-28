@@ -14,8 +14,11 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     viewer.rootContext()->setContextProperty("bdLogic", &backupDoitLogic);
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+#ifdef QMLBUILTIN
+    viewer.setSource(QUrl("qrc:/qml/backupdoit_qml/backupdoit.qml"));
+#else
     viewer.setMainQmlFile(QLatin1String("qml/backupdoit_qml/backupdoit.qml"));
-
+#endif
     backupDoitLogic.SetQmlObject(viewer.rootObject());
 
     viewer.showExpanded();
