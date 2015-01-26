@@ -9,3 +9,5 @@ GTD requires that all your actions/to-dos be recorded in a trusted system. In or
 Backupdoit is written in QtQuick and Qt using C++. It was a convenient excuse for me to learn all about QML.
 
 
+See more detail about this project on the page for it at [http://www.edlangley.co.uk/projects/backupdoit/](http://www.edlangley.co.uk/projects/backupdoit/).
+
