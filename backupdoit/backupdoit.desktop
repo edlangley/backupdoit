@@ -1,11 +1,10 @@
 [Desktop Entry]
-Encoding=UTF-8
 Version=1.0
+Encoding=UTF-8
+Name=backupdoit
+Comment=doit.im backup utility
+Exec=/opt/backupdoit/bin/backupdoit
+Icon=/opt/backupdoit/bin/backupdoit.png
 Type=Application
 Terminal=false
-Name=backupdoit
-Exec=/opt/backupdoit/bin/backupdoit
-Icon=backupdoit64
-X-Window-Icon=
-X-HildonDesk-ShowInToolbar=true
-X-Osso-Type=application/x-executable
+Categories=Utility;
