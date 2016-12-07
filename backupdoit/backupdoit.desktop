@@ -7,4 +7,4 @@ Exec=/opt/backupdoit/bin/backupdoit
 Icon=/opt/backupdoit/bin/backupdoit.png
 Type=Application
 Terminal=false
-Categories=Utility;
+Categories=Network;
