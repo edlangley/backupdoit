@@ -179,7 +179,7 @@ void BdLogic::replyFinished()
         else if(m_dlState == DLSTATE_INACTIVEPROJECTS)
         {
             boxUrl = DOIT_BASE_DATA_URL "project/";
-            boxUrl += m_inactiveProjectUUIDList[m_currentInactiveProjectDlIx];
+            boxUrl += QUrl::toPercentEncoding(m_inactiveProjectUUIDList[m_currentInactiveProjectDlIx]);
         }
         else
         {
